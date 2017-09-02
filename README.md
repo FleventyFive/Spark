@@ -30,7 +30,7 @@ EventPtr event = eventPool.getResource();
 ```
 
 ### Events
-Events are use to give and receive data. To create an event, create structure that holds the data you which to get or modify, and a list of event types. Get an event from the pool if using one, or create an event if not. set `Event::type` to the desired type, and `Event::data` to the desired data structure. If firing from the world, also set `Event::gameObjectID` to the ID of the GameObject you wish to modify. If firing directly in a gameObject, this is not necessary. 
+Events are used to give and receive data. To create an event, create structure that holds the data you which to get or modify, and a list of event types. Get an event from the pool if using one, or create an event if not. set `Event::type` to the desired type, and `Event::data` to the desired data structure. If firing from the world, also set `Event::gameObjectID` to the ID of the GameObject you wish to modify. If firing directly in a gameObject, this is not necessary. 
 
 ```c++
 // List of event types
