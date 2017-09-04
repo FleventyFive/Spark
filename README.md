@@ -30,7 +30,7 @@ EventPtr event = eventPool.getResource();
 ```
 
 ### Events
-Events are used to give and receive data. To create an event, create structure that holds the data you wish to get or modify, and a list of event types. Get an event from the pool if using one, or create an event if not. set `Event::type` to the desired type, and `Event::data` to the desired data structure. If firing from the world, also set `Event::gameObjectID` to the ID of the GameObject you wish to modify. If firing directly in a gameObject, this is not necessary. 
+Events are used to give and receive data. To create an event, create structure that holds the data you wish to get or modify, and a list of event types. Get an event from the pool if using one, or create an event if not. set `Event::type` to the desired type, and `Event::data` to the desired data structure. If firing from the world, also set `Event::gameObjectID` to the ID of the GameObject you wish to modify. If firing directly in a GameObject, this is not necessary. 
 
 ```c++
 // List of event types
@@ -112,9 +112,9 @@ Removing a component
 ```c++
 g->removeComponent<NameComponent>();
 ```
-If you want to a GameObject to receive an event when fired from `World::fireEvent()`, you must make the GameObject listen for that event with `GameObject::listenForEvent(EVENT_ID)`. This will register a listener that is automatically given to the world. For example:
+If you want a GameObject to receive an event when fired from `World::fireEvent()`, you must make the GameObject listen for that event with `GameObject::listenForEvent(EVENT_ID)`. This will register a listener that is automatically given to the world. For example:
 ```c++
 g->listenForEvent(EVENT_GET_NAME);
 ```
-the object g will now be notified by the listener whenever a event of type EVENT_GET_NAME is fired through world. To fire an event that effects all GameObjects listening to that event type, set `Event::gameObjectID` to `Spark::ALL_GAMEOBJECTS`.
+the object g will now be notified by the listener whenever a event of type EVENT_GET_NAME is fired through world. To fire an event that effects all GameObjects listening for that event type, set `Event::gameObjectID` to `Spark::ALL_GAMEOBJECTS`.
 
