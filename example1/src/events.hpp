@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 
-#include "spark.hpp"
+#include "../../spark.hpp"
 
 struct Die {
 	unsigned int rolls, sides;

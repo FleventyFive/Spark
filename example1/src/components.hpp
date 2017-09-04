@@ -3,7 +3,7 @@
 #include <iostream>
 #include <random>
 
-#include "spark.hpp"
+#include "../../spark.hpp"
 #include "events.hpp"
 
 class RenderComponent: public Spark::Component {
