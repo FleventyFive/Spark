@@ -54,7 +54,7 @@ targetGameObject->fireEvent(e.get());
 ```
 Note that the using .get() is only necessary if the event is from a pool. To modify Event data, create a reference to the desired data type, and cast the `Event::data`. You can then modify the data through the reference. For example:
 ```c++
-GetNameEvent& getNameEvent = std::experimental::any_cast<GetNameEvent&>(yourEvent->data);
+GetNameEvent& getNameEvent = std::any_cast<GetNameEvent&>(yourEvent->data);
 getNameEvent.name = "New Name";
 ```
 
@@ -72,7 +72,7 @@ public:
             // The GetNameEvent reference is in its own private scope to
             // prevent cross-initialization.
 			{
-				GetNameEvent& gne = std::experimental::any_cast<GetNameEvent&>(e->data);
+				GetNameEvent& gne = std::any_cast<GetNameEvent&>(e->data);
 				gne.name = name;
 			}
 				break;

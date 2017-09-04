@@ -15,7 +15,7 @@ public:
 		switch(e->type) {
 			case EVENT_GET_RENDER_DATA:
 				{
-					RenderEvent& re = std::experimental::any_cast<RenderEvent&>(e->data);
+					RenderEvent& re = std::any_cast<RenderEvent&>(e->data);
 					re.symbol = symbol;
 					re.name = name;
 					re.description = description;
@@ -38,7 +38,7 @@ public:
 		switch(e->type) {
 			case EVENT_DEAL_DAMAGE:
 				{
-					DealDamageEvent& dde = std::experimental::any_cast<DealDamageEvent&>(e->data);
+					DealDamageEvent& dde = std::any_cast<DealDamageEvent&>(e->data);
 					dde.damageVec.push_back(Damage(rollDie(die), DAMAGE_SLASH));
 				}
 				break;
@@ -58,7 +58,7 @@ public:
 		switch(e->type) {
 			case EVENT_DEAL_DAMAGE:
 			{
-				DealDamageEvent& dde = std::experimental::any_cast<DealDamageEvent&>(e->data);
+				DealDamageEvent& dde = std::any_cast<DealDamageEvent&>(e->data);
 				dde.damageVec.push_back(Damage(rollDie(die), DAMAGE_FIRE));
 			}
 				break;
@@ -78,7 +78,7 @@ public:
 		switch(e->type) {
 			case EVENT_DEAL_DAMAGE:
 			{
-				DealDamageEvent& dde = std::experimental::any_cast<DealDamageEvent&>(e->data);
+				DealDamageEvent& dde = std::any_cast<DealDamageEvent&>(e->data);
 				dde.damageVec.push_back(Damage(rollDie(die), DAMAGE_ICE));
 			}
 				break;

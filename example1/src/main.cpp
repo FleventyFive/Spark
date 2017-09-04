@@ -4,7 +4,7 @@
 #include <limits>
 #include <stack>
 #include <ctime>
-#include <experimental/any>
+#include <any>
 
 #include <assert.h>
 
@@ -13,10 +13,10 @@
 #include "events.hpp"
 
 int main(void) {
-	srand(time(NULL));
+	srand((unsigned int)time(NULL));
 
 	std::cout << "Last compiled : " << __DATE__ << ", " << __TIME__ << '\n';
-  	std::cout << "Spark version - " << SPARK_VERSION_NUMBER << '\n';
+  std::cout << "Spark version - " << SPARK_VERSION_NUMBER << '\n';
 	std::cout << "Developed by Mark Calhoun: https://github.com/FleventyFive\n\n";
 
 
@@ -42,9 +42,9 @@ int main(void) {
 
 	sword->fireEvent(e.get());
 
-	std::cout << "Symbol - " << std::experimental::any_cast<RenderEvent>(e->data).symbol
-		<< "\nName - " << std::experimental::any_cast<RenderEvent>(e->data).name
-		<< "\nDescription - " << std::experimental::any_cast<RenderEvent>(e->data).description << '\n';
+	std::cout << "Symbol - " << std::any_cast<RenderEvent>(e->data).symbol
+		<< "\nName - " << std::any_cast<RenderEvent>(e->data).name
+		<< "\nDescription - " << std::any_cast<RenderEvent>(e->data).description << '\n';
 
 	e->type = EVENT_DEAL_DAMAGE;
 	e->data = DealDamageEvent();
@@ -52,8 +52,8 @@ int main(void) {
 	sword->fireEvent(e.get());
 
 	std::cout << "Swinging sword...\n";
-	for(std::size_t i = 0; i < std::experimental::any_cast<DealDamageEvent>(e->data).damageVec.size(); ++i)
-		std::cout << "Damage dealt - " << std::experimental::any_cast<DealDamageEvent>(e->data).damageVec[i].damageDealt << '\n';
+	for(std::size_t i = 0; i < std::any_cast<DealDamageEvent>(e->data).damageVec.size(); ++i)
+		std::cout << "Damage dealt - " << std::any_cast<DealDamageEvent>(e->data).damageVec[i].damageDealt << '\n';
 
 	return 0;
 }
