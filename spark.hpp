@@ -8,6 +8,7 @@
 #include <bitset>
 #include <vector>
 #include <deque>
+#include <any>
 #include <map>
 
 #define SPARK_VERSION_NUMBER "1.0.0"
@@ -70,7 +71,7 @@ namespace Spark {
 
 	struct Event {
 		unsigned int type, gameObjectID;
-		std::experimental::any data;
+		std::any data;
 	};
 
 	typedef Pool<Event>::ptrType EventPtr;

@@ -8,7 +8,7 @@
 
 #include <assert.h>
 
-#include "spark.hpp"
+#include "../../spark.hpp"
 #include "components.hpp"
 #include "events.hpp"
 
