@@ -1,0 +1,14 @@
+*.suo
+*.tlog
+example1/premake5.exe
+*.obj
+*.log
+*.opendb
+*.db
+*.vcxproj
+*.ipch
+*.sln
+*.pdb
+*.ilk
+*.idb
+*.exe
