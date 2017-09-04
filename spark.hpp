@@ -1,11 +1,11 @@
-#pragma once
+#ifndef SPARK_HPP
+#define SPARK_HPP
 
 #include <iostream>
 #include <type_traits>
 #include <algorithm>
 #include <limits>
 #include <memory>
-#include <bitset>
 #include <vector>
 #include <deque>
 #include <any>
@@ -15,7 +15,6 @@
 
 namespace Spark {
 	class Listener;
-	class GameObject;
 	class World;
 
 	constexpr static unsigned int ALL_GAMEOBJECTS = std::numeric_limits<unsigned int>::max();
@@ -144,7 +143,7 @@ namespace Spark {
 			return iter != components.end();
 		}
 
-		void listenForEvent(unsigned int type) noexcept;
+		inline void listenForEvent(unsigned int type) noexcept;
 
 		unsigned int getID() const noexcept { return ID; }
 
@@ -217,8 +216,10 @@ namespace Spark {
 		World(): lastID(0) { }
 	};
 
-	void GameObject::listenForEvent(unsigned int type) noexcept {
+	inline void GameObject::listenForEvent(unsigned int type) noexcept {
 		listeners.push_back(std::unique_ptr<Listener> { new Listener(*this, type) });
 		world.addListener(listeners.back().get());
 	}
 };
+
+#endif
