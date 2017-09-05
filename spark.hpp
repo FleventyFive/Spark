@@ -11,6 +11,8 @@
 #include <any>
 #include <map>
 
+#include <assert.h>
+
 #define SPARK_VERSION_NUMBER "1.0.0"
 
 namespace Spark {
