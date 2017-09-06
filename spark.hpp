@@ -18,6 +18,7 @@
 namespace Spark {
 	class Listener;
 	class World;
+	class GameObject;
 
 	constexpr static unsigned int ALL_GAMEOBJECTS = std::numeric_limits<unsigned int>::max();
 
@@ -80,10 +81,16 @@ namespace Spark {
 	class Component {
 	private:
 		const ComponentID id;
+
+		GameObject* owner;
 	public:
 		virtual void fireEvent(Event* e) = 0;
 
 		ComponentID getID() const noexcept { return id; }
+
+		constexpr GameObject* getOwner() noexcept { return owner; }
+
+		constexpr void setOwner(GameObject* g) noexcept { owner = g; }
 
 		Component(ComponentID _id): id(_id) { }
 	};
@@ -105,6 +112,7 @@ namespace Spark {
 			static_assert(std::is_base_of<Component, T>::value, "T not derived from Component");
 			assert(!hasComponent<T>() && "Component already exists");
 			components.push_back(std::unique_ptr<Component> { new T(std::forward<TArgs>(mArgs)...) });
+			components.back()->setOwner(this);
 		}
 
 		template<typename T>
