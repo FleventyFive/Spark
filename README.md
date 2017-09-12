@@ -114,7 +114,11 @@ g->removeComponent<NameComponent>();
 ```
 If you want a GameObject to receive an event when fired from `World::fireEvent()`, you must make the GameObject listen for that event with `GameObject::listenForEvent(EVENT_ID)`. This will register a listener that is automatically given to the world. For example:
 ```c++
-g->listenForEvent(EVENT_GET_NAME);
+g->listenForEvent(EVENT_ID);
 ```
 the object g will now be notified by the listener whenever a event of type EVENT_GET_NAME is fired through world. To fire an event that effects all GameObjects listening for that event type, set `Event::gameObjectID` to `Spark::ALL_GAMEOBJECTS`.
 
+You can also remove listeners with `GameObject::stopListeningForEvent(EVENT_ID)`
+```c++
+g->stopListeningForEvent(EVENT_ID);
+```
