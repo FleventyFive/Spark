@@ -16,7 +16,7 @@ int main(void) {
 	srand((unsigned int)time(NULL));
 
 	std::cout << "Last compiled : " << __DATE__ << ", " << __TIME__ << '\n';
-  std::cout << "Spark version - " << SPARK_VERSION_NUMBER << '\n';
+	std::cout << "Spark version - " << SPARK_VERSION_NUMBER << '\n';
 	std::cout << "Developed by Mark Calhoun: https://github.com/FleventyFive\n\n";
 
 

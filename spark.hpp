@@ -2,7 +2,6 @@
 #define SPARK_HPP
 
 #include <iostream>
-#include <type_traits>
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -13,7 +12,7 @@
 
 #include <assert.h>
 
-#define SPARK_VERSION_NUMBER "1.0.0"
+#define SPARK_VERSION_NUMBER "1.1.0"
 
 namespace Spark {
 	class Listener;
@@ -154,6 +153,7 @@ namespace Spark {
 		}
 
 		inline void listenForEvent(unsigned int type) noexcept;
+		inline void stopListeningForEvent(unsigned int type) noexcept;
 
 		unsigned int getID() const noexcept { return ID; }
 
@@ -162,14 +162,11 @@ namespace Spark {
 
 	class Listener {
 	private:
-		GameObject& owner;
+		const GameObject& owner;
 
 		const unsigned int listensForType;
 	public:
-		void onNotify(Event* e) noexcept {
-			if(e->gameObjectID == getOwnerID() || e->gameObjectID == ALL_GAMEOBJECTS)
-				owner.fireEvent(e);
-		}
+		void onNotify(Event* e) noexcept { owner.fireEvent(e); }
 
 		unsigned int getListensForType() const noexcept { return listensForType; }
 		unsigned int getOwnerID() const noexcept { return owner.getID(); }
@@ -180,22 +177,34 @@ namespace Spark {
 	class World {
 	private:
 		std::vector<std::unique_ptr<GameObject>> gameObjects;
-		std::map<unsigned int, std::vector<Listener*>> listeners;
+		// GameObjects have a map of listeners, mapped by 
+		std::map<unsigned int, std::map<unsigned int, Listener*>> listeners;
 
 		unsigned int lastID;
 
 		std::vector<unsigned int> freeIDs;
 	public:
 		void fireEvent(Event* e) {
-			if(listeners.find(e->type) != listeners.end()) {
-				const std::vector<Listener*>& listenerVec = listeners[e->type];
-				for(const auto& listener : listenerVec)
-					listener->onNotify(e);
+			if(e->gameObjectID == ALL_GAMEOBJECTS) {
+				for(const auto& listenerMap : listeners) {
+					if(listenerMap.second.find(e->type) != listenerMap.second.end())
+						listenerMap.second.find(e->type)->second->onNotify(e);
+				}
+			} else if(listeners.find(e->gameObjectID) != listeners.end()) {
+				if(listeners[e->gameObjectID].find(e->type) != listeners[e->gameObjectID].end()) {
+					listeners[e->gameObjectID][e->type]->onNotify(e);
+				}
 			}
 		}
 
-		void addListener(Listener* l) noexcept {
-			listeners[l->getListensForType()].push_back(l);
+		void addListener(unsigned int gameObjectID, Listener* l) noexcept {
+			if(listeners[gameObjectID].find(l->getListensForType()) == listeners[gameObjectID].end())
+				listeners[gameObjectID][l->getListensForType()] = l;
+		}
+
+		void removeListener(unsigned int gameObjectID, unsigned int type) noexcept {
+			if(listeners[gameObjectID].find(type) != listeners[gameObjectID].end())
+				listeners[gameObjectID].erase(type);
 		}
 
 		GameObject* createGameObject() noexcept {
@@ -228,7 +237,21 @@ namespace Spark {
 
 	inline void GameObject::listenForEvent(unsigned int type) noexcept {
 		listeners.push_back(std::unique_ptr<Listener> { new Listener(*this, type) });
-		world.addListener(listeners.back().get());
+		world.addListener(ID, listeners.back().get());
+	}
+
+	inline void GameObject::stopListeningForEvent(unsigned int type) noexcept {
+		int index = 0;
+		auto iter = std::find_if(listeners.begin(), listeners.end(),
+			[&](const std::unique_ptr<Listener>& lPtr) {
+				++index;
+				return (lPtr->getListensForType() == type);
+			});
+		if(iter != listeners.end()) {
+			world.removeListener(ID, type);
+			std::swap(listeners[index - 1], listeners.back());
+			listeners.pop_back();
+		}
 	}
 };
 
