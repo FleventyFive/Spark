@@ -69,8 +69,8 @@ public:
 	void fireEvent(Spark::Event* e) {
 		switch(e->type) {
 			case EVENT_GET_NAME:
-            // The GetNameEvent reference is in its own private scope to
-            // prevent cross-initialization.
+			// The GetNameEvent reference is in its own private scope to
+            		// prevent cross-initialization.
 			{
 				GetNameEvent& gne = std::any_cast<GetNameEvent&>(e->data);
 				gne.name = name;
@@ -83,6 +83,12 @@ public:
 
 	NameComponent(std::string _name): Component(Spark::getComponentID<NameComponent>()), name(_name) { }
 };
+```
+
+If you need to get data or fire an event within the component, you can call `Component::getOwner()` to get a pointer to the owner.
+```c++
+Event e;
+getOwner()->fireEvent(&e);
 ```
 
 ### GameObjects
