@@ -162,7 +162,7 @@ namespace Spark {
 
 	class Listener {
 	private:
-		const GameObject& owner;
+		GameObject& owner;
 
 		const unsigned int listensForType;
 	public:
