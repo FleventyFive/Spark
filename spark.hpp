@@ -186,9 +186,9 @@ namespace Spark {
 	public:
 		void fireEvent(Event* e) {
 			if(e->gameObjectID == ALL_GAMEOBJECTS) {
-				for(const auto& listenerMap : listeners) {
-					if(listenerMap.second.find(e->type) != listenerMap.second.end())
-						listenerMap.second.find(e->type)->second->onNotify(e);
+				for(auto& [key, listenerMap] : listeners) {
+					if(listenerMap.find(e->type) != listenerMap.end())
+						listenerMap.find(e->type)->second->onNotify(e);
 				}
 			} else if(listeners.find(e->gameObjectID) != listeners.end()) {
 				if(listeners[e->gameObjectID].find(e->type) != listeners[e->gameObjectID].end()) {
