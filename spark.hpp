@@ -96,7 +96,6 @@ namespace Spark {
 
 	class GameObject {
 	private:
-
 		std::vector<std::unique_ptr<Listener>> listeners;
 		std::vector<std::unique_ptr<Component>> components;
 
@@ -105,6 +104,7 @@ namespace Spark {
 		const unsigned int ID;
 	public:
 		void fireEvent(Event* e) { for(const auto& component : components) component->fireEvent(e); }
+		void fireEvent(Pool<Event>::ptrType& e) { for(const auto& component : components) component->fireEvent(e.get()); }
 		
 		template<typename T, typename... TArgs>
 		void addComponent(TArgs&&... mArgs) noexcept {
@@ -197,6 +197,19 @@ namespace Spark {
 			}
 		}
 
+		void fireEvent(Pool<Event>::ptrType& e) {
+			if(e->gameObjectID == ALL_GAMEOBJECTS) {
+				for(auto& [key, listenerMap] : listeners) {
+					if(listenerMap.find(e->type) != listenerMap.end())
+						listenerMap.find(e->type)->second->onNotify(e.get());
+				}
+			} else if(listeners.find(e->gameObjectID) != listeners.end()) {
+				if(listeners[e->gameObjectID].find(e->type) != listeners[e->gameObjectID].end()) {
+					listeners[e->gameObjectID][e->type]->onNotify(e.get());
+				}
+			}
+		}
+
 		void addListener(unsigned int gameObjectID, Listener* l) noexcept {
 			if(listeners[gameObjectID].find(l->getListensForType()) == listeners[gameObjectID].end())
 				listeners[gameObjectID][l->getListensForType()] = l;
@@ -205,6 +218,10 @@ namespace Spark {
 		void removeListener(unsigned int gameObjectID, unsigned int type) noexcept {
 			if(listeners[gameObjectID].find(type) != listeners[gameObjectID].end())
 				listeners[gameObjectID].erase(type);
+		}
+
+		void removeAllListeners(unsigned int gameObjectID) noexcept {
+			listeners.erase(gameObjectID);
 		}
 
 		GameObject* createGameObject() noexcept {
@@ -229,6 +246,7 @@ namespace Spark {
 				std::swap(gameObjects[index - 1], gameObjects.back());
 				gameObjects.pop_back();
 				freeIDs.push_back(id);
+				removeAllListeners(id);
 			}
 		}
 
