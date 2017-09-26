@@ -40,7 +40,7 @@ int main(void) {
 	e->type = EVENT_GET_RENDER_DATA;
 	e->data = RenderEvent();
 
-	sword->fireEvent(e.get());
+	sword->fireEvent(e);
 
 	std::cout << "Symbol - " << std::any_cast<RenderEvent>(e->data).symbol
 		<< "\nName - " << std::any_cast<RenderEvent>(e->data).name
@@ -49,7 +49,7 @@ int main(void) {
 	e->type = EVENT_DEAL_DAMAGE;
 	e->data = DealDamageEvent();
 
-	sword->fireEvent(e.get());
+	sword->fireEvent(e);
 
 	std::cout << "Swinging sword...\n";
 	for(std::size_t i = 0; i < std::any_cast<DealDamageEvent>(e->data).damageVec.size(); ++i)

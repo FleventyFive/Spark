@@ -51,23 +51,3 @@ struct RenderEvent {
 	std::string name, description;
 	char symbol;
 };
-
-// union Spark::EventPayload {
-// 	DamageEvent damageEvent;
-// 	GetDamageEvent getDamageEvent;
-// 	HealEvent healEvent;
-// 	PositionIncrementEvent positionIncrementEvent;
-// };
-
-// Attack entities by posting a message with the id of the object its attacking.
-// struct PositionIncrementEvent: public Spark::Event {
-// 	int incAmount;
-
-// 	PositionIncrementEvent(): Event(EVENT_INCREMENT_POSITION) { }
-// };
-
-// struct DamageGetEvent: public Spark::Event {
-// 	int damage;
-
-// 	DamageGetEvent(): Event(EVENT_GET_DAMAGE) { }
-// };
