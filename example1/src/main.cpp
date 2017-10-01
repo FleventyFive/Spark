@@ -23,7 +23,7 @@ int main(void) {
 	// create and initialize pool with 100 events
 	Spark::Pool<Spark::Event> eventPool;
 	for(int i = 0; i < 100; ++i)
-		eventPool.add(std::unique_ptr<Spark::Event>{ new Spark::Event });
+		eventPool.add(std::unique_ptr<Spark::Event>{ std::make_unique<Spark::Event>() });
 
 	Spark::World world;
 
