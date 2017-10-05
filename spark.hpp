@@ -263,8 +263,6 @@ namespace Spark {
 			}
 
 			blueprintMap[_blueprint.name] = _blueprint;
-
-			std::cout << '\n';
 		}
 
 	public:

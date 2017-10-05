@@ -19,7 +19,7 @@ int main(void) {
 
 	std::cout << "Last compiled : " << __DATE__ << ", " << __TIME__ << '\n';
 	std::cout << "Spark version - " << SPARK_VERSION_NUMBER << '\n';
-	std::cout << "Developed by Mark Calhoun: https://github.com/FleventyFive\n\n";
+	std::cout << "Developed by Mark Calhoun: https://github.com/FleventyFive\n";
 
 
 	// Create and initialize pool with 100 events
@@ -68,15 +68,15 @@ int main(void) {
 Spark::GameObject* createFromBlueprint(Spark::World &world, Spark::Blueprint blueprint) {
 	Spark::GameObject* g = world.createGameObject();
 
-	std::cout << blueprint.name << '\n';
-	for(std::size_t i = 0; i < blueprint.components.size(); ++i) {
-		std::cout << '\t' << blueprint.components[i].name << '\n';
-		for(const auto& [key, value] : blueprint.components[i].arguments)
-			std::cout << "\t\t" << key << " - " << value << '\n';
-	}
-	std::cout << "Listen for -\n";
-	for(const auto& name : blueprint.listenForEvents)
-			std::cout << "\t\t" << name << '\n';
+	// std::cout << blueprint.name << '\n';
+	// for(std::size_t i = 0; i < blueprint.components.size(); ++i) {
+	// 	std::cout << '\t' << blueprint.components[i].name << '\n';
+	// 	for(const auto& [key, value] : blueprint.components[i].arguments)
+	// 		std::cout << "\t\t" << key << " - " << value << '\n';
+	// }
+	// std::cout << "Listen for -\n";
+	// for(const auto& name : blueprint.listenForEvents)
+	// 		std::cout << "\t\t" << name << '\n';
 
 	for(auto& component : blueprint.components) {
 		if(component.name == "RenderComponent") {
