@@ -147,7 +147,7 @@ To have the object listen for a certain type of event, use the listenFor identif
 ```
 <object Name="Sword">
 	<component ComponentName="NameComponent" name="Sword">
-    <listenFor Name="EVENT_GET_NAME">
+	<listenFor Name="EVENT_GET_NAME">
 </object>
 ```
 To load your blueprints into the world, use `World::loadBlueprints("Path/to/blueprints.blpt")`
