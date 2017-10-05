@@ -25,7 +25,7 @@ The pool is multipurpose, and can be used for more than just events. To get an o
 ```c++
 Spark::Pool<Spark::Event> eventPool;
 for(int i = 0; i < DESIRED_NUMBER_OF_EVENTS; ++i)
-	eventPool.add(std::unique_ptr<Spark::Event> { new Spark::Event });
+	eventPool.add(std::unique_ptr<Spark::Event> { std::make_unique<Spark::Event>() });
 EventPtr event = eventPool.getResource();
 ```
 
@@ -48,11 +48,11 @@ e->type = EVENT_GET_NAME;
 e->data = GetNameEvent();
 e->gameObjectID = targetGameObject.getID(); // Only required if using world.fireEvent();
 
-world.fireEvent(e.get());
+world.fireEvent(e);
 // or
-targetGameObject->fireEvent(e.get());
+targetGameObject->fireEvent(e);
 ```
-Note that the using .get() is only necessary if the event is from a pool. To modify Event data, create a reference to the desired data type, and cast the `Event::data`. You can then modify the data through the reference. For example:
+To modify Event data, create a reference to the desired data type, and cast the `Event::data`. You can then modify the data through the reference. For example:
 ```c++
 GetNameEvent& getNameEvent = std::any_cast<GetNameEvent&>(yourEvent->data);
 getNameEvent.name = "New Name";
