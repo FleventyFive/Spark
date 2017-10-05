@@ -15,6 +15,7 @@ public:
 		switch(e->type) {
 			case EVENT_GET_RENDER_DATA:
 				{
+					// Give the event the render data
 					RenderEvent& re = std::any_cast<RenderEvent&>(e->data);
 					re.symbol = symbol;
 					re.name = name;
@@ -38,6 +39,7 @@ public:
 		switch(e->type) {
 			case EVENT_DEAL_DAMAGE:
 				{
+					// Generate some damage, and give it to the event
 					DealDamageEvent& dde = std::any_cast<DealDamageEvent&>(e->data);
 					dde.damageVec.push_back(Damage(rollDie(die), DAMAGE_SLASH));
 				}
@@ -47,7 +49,7 @@ public:
 		}
 	}
 
-	DamageComponent(Die _die): Component(Spark::getComponentID<DamageComponent>()), die(_die) { }
+	DamageComponent(unsigned int rolls, unsigned int sides): Component(Spark::getComponentID<DamageComponent>()), die(Die({rolls, sides})) { }
 };
 
 class FireDamageComponent: public Spark::Component {
@@ -58,6 +60,7 @@ public:
 		switch(e->type) {
 			case EVENT_DEAL_DAMAGE:
 			{
+				// Generate some damage, and give it to the event
 				DealDamageEvent& dde = std::any_cast<DealDamageEvent&>(e->data);
 				dde.damageVec.push_back(Damage(rollDie(die), DAMAGE_FIRE));
 			}
@@ -67,7 +70,7 @@ public:
 		}
 	}
 
-	FireDamageComponent(Die _die): Component(Spark::getComponentID<FireDamageComponent>()), die(_die) { }
+	FireDamageComponent(unsigned int rolls, unsigned int sides): Component(Spark::getComponentID<FireDamageComponent>()), die(Die({rolls, sides})) { }
 };
 
 class IceDamageComponent: public Spark::Component {
@@ -78,6 +81,7 @@ public:
 		switch(e->type) {
 			case EVENT_DEAL_DAMAGE:
 			{
+				// Generate some damage, and give it to the event
 				DealDamageEvent& dde = std::any_cast<DealDamageEvent&>(e->data);
 				dde.damageVec.push_back(Damage(rollDie(die), DAMAGE_ICE));
 			}

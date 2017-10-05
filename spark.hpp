@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <fstream>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -12,12 +13,23 @@
 
 #include <assert.h>
 
-#define SPARK_VERSION_NUMBER "1.1.0"
+#define SPARK_VERSION_NUMBER "1.5.0"
 
 namespace Spark {
 	class Listener;
 	class World;
 	class GameObject;
+
+	struct BlueprintComponent {
+		std::string name;
+		std::map<std::string, std::string> arguments;
+	};
+
+	struct Blueprint {
+		std::string name;
+		std::vector<BlueprintComponent> components;
+		std::vector<std::string> listenForEvents;
+	};
 
 	constexpr static unsigned int ALL_GAMEOBJECTS = std::numeric_limits<unsigned int>::max();
 
@@ -177,12 +189,84 @@ namespace Spark {
 	class World {
 	private:
 		std::vector<std::unique_ptr<GameObject>> gameObjects;
-		// GameObjects have a map of listeners, mapped by 
+		// GameObjects have a map of listeners, mapped by the event they listen for
 		std::map<unsigned int, std::map<unsigned int, Listener*>> listeners;
 
 		unsigned int lastID;
-
 		std::vector<unsigned int> freeIDs;
+
+		std::map<std::string, Blueprint> blueprintMap;
+
+		BlueprintComponent parseComponent(const std::string& componentData) {
+			BlueprintComponent component;
+
+			std::size_t start, end;
+
+			start = componentData.find("ComponentName");
+			start = componentData.find('\"', start) + 1;
+			end = componentData.find('\"', start);
+
+			component.name = componentData.substr(start,end-(start));
+
+			start = componentData.find(' ', end);
+			end = componentData.find('\"', start);
+			end = componentData.find('\"', end + 1);
+
+			do {
+				end = componentData.find('=', start);
+				if(end != std::string::npos) {
+					std::string name = componentData.substr(start + 1, end - start - 1);
+					start = componentData.find('\"', start) + 1;
+					end = componentData.find('\"', start + 1);
+					std::string data = componentData.substr(start, end - start);
+
+					component.arguments[name] = data;
+
+					start = end + 1;
+				}
+			} while(end < componentData.size() - 1);
+
+			return component;
+		}
+
+		void parseBlueprint(const std::string& blueprint) {
+			Blueprint _blueprint;
+			std::size_t start, end, blueprintEnd;
+
+			blueprintEnd = blueprint.find("</object>");
+
+			start = blueprint.find("Name");
+
+			start = blueprint.find('\"', start) + 1;
+			end = blueprint.find('\"', start);
+
+			_blueprint.name = blueprint.substr(start,end-(start));
+
+			start = blueprint.find('<', start) + 1;
+			end = blueprint.find('>', start);
+
+			while(end < blueprintEnd) {
+				int identifier = blueprint.find(' ', start);
+
+
+				if(blueprint.substr(start, identifier - start) == "component") {
+					_blueprint.components.push_back(parseComponent(blueprint.substr(start, end - start)));
+				} else {
+					start = blueprint.find("Name", start);
+					start = blueprint.find('\"', start) + 1;
+					end = blueprint.find('\"', start);
+					_blueprint.listenForEvents.push_back(blueprint.substr(start, end - start));
+				}
+
+				start = blueprint.find('<', start) + 1;
+				end = blueprint.find('>', start);
+			}
+
+			blueprintMap[_blueprint.name] = _blueprint;
+
+			std::cout << '\n';
+		}
+
 	public:
 		void fireEvent(Event* e) {
 			if(e->gameObjectID == ALL_GAMEOBJECTS) {
@@ -220,9 +304,7 @@ namespace Spark {
 				listeners[gameObjectID].erase(type);
 		}
 
-		void removeAllListeners(unsigned int gameObjectID) noexcept {
-			listeners.erase(gameObjectID);
-		}
+		void removeAllListeners(unsigned int gameObjectID) noexcept { listeners.erase(gameObjectID); }
 
 		GameObject* createGameObject() noexcept {
 			if(freeIDs.size() == 0) {
@@ -249,6 +331,35 @@ namespace Spark {
 				removeAllListeners(id);
 			}
 		}
+
+		void loadBlueprints(std::string filePath) {
+			std::ifstream file(filePath);
+
+			std::string fileText, line, blueprint;
+
+			while(getline(file, line))
+				if(line[0] != '#' && line[0] != '\n')
+					fileText += line;
+
+			fileText.erase(std::remove(fileText.begin(), fileText.end(), '\t'), fileText.end());
+			fileText.erase(std::remove(fileText.begin(), fileText.end(), '\n'), fileText.end());
+
+			std::size_t start = 0;
+			std::size_t pos = fileText.find("</object>");
+
+		 	while(pos != std::string::npos) {
+				pos += 9;
+
+				blueprint = fileText.substr(start,pos-(start));
+
+				parseBlueprint(blueprint);
+
+				start = pos;
+				pos = fileText.find("</object>",start);
+			}
+		}
+
+		Blueprint getBlueprintByName(std::string blueprintName) { return blueprintMap[blueprintName]; }
 
 		World(): lastID(0) { }
 	};
