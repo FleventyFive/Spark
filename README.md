@@ -128,3 +128,51 @@ You can also remove listeners with `GameObject::stopListeningForEvent(EVENT_ID)`
 ```c++
 g->stopListeningForEvent(EVENT_ID);
 ```
+
+### Blueprints
+Blueprints are a way to create GameObjects without having to hardcode them into your game. Blueprints are written into .blpt files, and loaded into Spark through the world. From there you have to make your own function to create the GameObjects from the parsed data.
+
+To create an object do as follows:
+```
+<object Name="Sword">
+</object>
+```
+To give it components, put then between the object tags. All data types are put in between double quotes.
+```
+<object Name="Sword">
+	<component ComponentName="NameComponent" name="Sword">
+</object>
+```
+To have the object listen for a certain type of event, use the listenFor identifier.
+```
+<object Name="Sword">
+	<component ComponentName="NameComponent" name="Sword">
+	<listenFor Name="EVENT_GET_NAME">
+</object>
+```
+To load your blueprints into the world, use `World::loadBlueprints("Path/to/blueprints.blpt")`
+
+Next, you'll want to create a function to create the GameObjects. Blueprints contain a name, a vector of BlueprintComponents, and a vector of the names of events the object should listen for. BlueprintComponents contain a map of arguments, that are indexed by their argument name, and return their value as a string. Because of this, if you have an argument that is taken in as an int, you must convert it from a `std::string` to an `int` via `std::stoi` or a function like that. 
+
+From the example above, the NameComponents constructor requires a string for `std::string _name` The blueprint has the argument `name="Sword"`. The the map, this would be accessed with `arguments["name"]` and would give you the string `Sword`.
+
+An example of this function would be:
+```c++
+Spark::GameObject* createFromBlueprint(Spark::World& world, Spark::Blueprint blueprint) {
+	Spark::GameObject* g = world.createGameObject();
+    
+	for(auto& component : blueprint.components) {
+		if(component.name == "NameComponent") {
+			g->addComponent<RenderComponent>(component.arguments["name"]);
+		}
+	}
+
+	for(auto& event : blueprint.listenForEvents) {
+		if(event == "EVENT_GET_NAME") {
+			g->listenForEvent(EVENT_GET_NAME);
+		}
+	}
+
+	return g;
+}
+```
