@@ -1,12 +1,7 @@
-#include <iostream>
-#include <algorithm>
-#include <vector>
-#include <limits>
-#include <stack>
-#include <ctime>
 #include <any>
-
-#include <assert.h>
+#include <cassert>
+#include <iostream>
+#include <vector>
 
 #include "../../spark.hpp"
 #include "components.hpp"
@@ -14,18 +9,17 @@
 
 Spark::GameObject* createFromBlueprint(Spark::World &world, Spark::Blueprint blueprint);
 
-int main(void) {
-	srand((unsigned int)time(NULL));
-
+int main() {
 	std::cout << "Last compiled : " << __DATE__ << ", " << __TIME__ << '\n';
 	std::cout << "Spark version - " << SPARK_VERSION_NUMBER << '\n';
-	std::cout << "Developed by Mark Calhoun: https://github.com/FleventyFive\n";
+	std::cout << "Developed by Mark Calhoun: https://github.com/FleventyFive\n\n";
 
 
 	// Create and initialize pool with 100 events
 	Spark::Pool<Spark::Event> eventPool;
-	for(int i = 0; i < 100; ++i)
-		eventPool.add(std::unique_ptr<Spark::Event>{ std::make_unique<Spark::Event>() });
+	for(int i = 0; i < 100; ++i) {
+		eventPool.add(std::make_unique<Spark::Event>());
+	}
 
 	Spark::World world;
 
@@ -58,8 +52,9 @@ int main(void) {
 
 	// Display the damage
 	std::cout << "Swinging sword...\n";
-	for(std::size_t i = 0; i < std::any_cast<DealDamageEvent>(e->data).damageVec.size(); ++i)
+	for(std::size_t i = 0; i < std::any_cast<DealDamageEvent>(e->data).damageVec.size(); ++i) {
 		std::cout << "Damage dealt - " << std::any_cast<DealDamageEvent>(e->data).damageVec[i].damageDealt << '\n';
+	}
 
 	return 0;
 }
@@ -68,15 +63,17 @@ int main(void) {
 Spark::GameObject* createFromBlueprint(Spark::World &world, Spark::Blueprint blueprint) {
 	Spark::GameObject* g = world.createGameObject();
 
-	// std::cout << blueprint.name << '\n';
-	// for(std::size_t i = 0; i < blueprint.components.size(); ++i) {
-	// 	std::cout << '\t' << blueprint.components[i].name << '\n';
-	// 	for(const auto& [key, value] : blueprint.components[i].arguments)
-	// 		std::cout << "\t\t" << key << " - " << value << '\n';
-	// }
-	// std::cout << "Listen for -\n";
-	// for(const auto& name : blueprint.listenForEvents)
-	// 		std::cout << "\t\t" << name << '\n';
+	std::cout << blueprint.name << '\n';
+	for(auto& component : blueprint.components) {
+		std::cout << '\t' << component.name << '\n';
+		for(const auto& [key, value] : component.arguments) {
+			std::cout << "\t\t" << key << " - " << value << '\n';
+		}
+	}
+	std::cout << "Listen for -\n";
+	for(const auto& name : blueprint.listenForEvents) {
+		std::cout << "\t\t" << name << '\n';
+	}
 
 	for(auto& component : blueprint.components) {
 		if(component.name == "RenderComponent") {

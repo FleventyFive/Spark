@@ -1,17 +1,16 @@
 #ifndef SPARK_HPP
 #define SPARK_HPP
 
-#include <iostream>
 #include <algorithm>
+#include <any>
+#include <cassert>
+#include <deque>
 #include <fstream>
+#include <iostream>
 #include <limits>
+#include <map>
 #include <memory>
 #include <vector>
-#include <deque>
-#include <any>
-#include <map>
-
-#include <assert.h>
 
 #define SPARK_VERSION_NUMBER "1.5.0"
 
@@ -33,7 +32,7 @@ namespace Spark {
 
 	constexpr static unsigned int ALL_GAMEOBJECTS = std::numeric_limits<unsigned int>::max();
 
-	typedef std::size_t ComponentID;
+	using ComponentID = std::size_t;
 
 	inline ComponentID getComponentID() noexcept {
 		static std::size_t lastID = 0;
@@ -60,7 +59,7 @@ namespace Spark {
 				std::default_delete<T>{}(ptr);
 			}
 
-			ReturnToPoolDeleter(Pool* p): pool(p) { }
+			explicit ReturnToPoolDeleter(Pool* p): pool(p) { }
 		};
 
 		std::deque<std::unique_ptr<T>> objects;
@@ -79,7 +78,7 @@ namespace Spark {
 		constexpr int size() const noexcept { return objects.size(); }
 		constexpr bool empty() const noexcept { return objects.empty(); }
 
-		constexpr Pool() noexcept { }
+		constexpr Pool() noexcept = default;
 	};
 
 	struct Event {
@@ -87,7 +86,7 @@ namespace Spark {
 		std::any data;
 	};
 
-	typedef Pool<Event>::ptrType EventPtr;
+	using EventPtr = Pool<Event>::ptrType;
 
 	class Component {
 	private:
@@ -103,7 +102,7 @@ namespace Spark {
 
 		constexpr void setOwner(GameObject* g) noexcept { owner = g; }
 
-		Component(ComponentID _id): id(_id) { }
+		explicit Component(ComponentID _id): id(_id) { }
 	};
 
 	class GameObject {
@@ -115,8 +114,8 @@ namespace Spark {
 
 		const unsigned int ID;
 	public:
-		void fireEvent(Event* e) { for(const auto& component : components) component->fireEvent(e); }
-		void fireEvent(Pool<Event>::ptrType& e) { for(const auto& component : components) component->fireEvent(e.get()); }
+		void fireEvent(Event* e) { for(const auto& component : components) { component->fireEvent(e); } }
+		void fireEvent(const Pool<Event>::ptrType& e) { for(const auto& component : components) { component->fireEvent(e.get()); } }
 		
 		template<typename T, typename... TArgs>
 		void addComponent(TArgs&&... mArgs) noexcept {
@@ -149,10 +148,10 @@ namespace Spark {
 				return (cPtr->getID() == getComponentID<T>());
 			});
 
-			if(iter != components.end())
+			if(iter != components.end()) {
 				return components[index - 1].get();
-			else
-				return nullptr;
+			}
+			return nullptr;
 		}
 
 		template<typename T>
@@ -192,7 +191,7 @@ namespace Spark {
 		// GameObjects have a map of listeners, mapped by the event they listen for
 		std::map<unsigned int, std::map<unsigned int, Listener*>> listeners;
 
-		unsigned int lastID;
+		unsigned int lastID{0};
 		std::vector<unsigned int> freeIDs;
 
 		std::map<std::string, Blueprint> blueprintMap;
@@ -209,8 +208,6 @@ namespace Spark {
 			component.name = componentData.substr(start,end-(start));
 
 			start = componentData.find(' ', end);
-			end = componentData.find('\"', start);
-			end = componentData.find('\"', end + 1);
 
 			do {
 				end = componentData.find('=', start);
@@ -269,8 +266,9 @@ namespace Spark {
 		void fireEvent(Event* e) {
 			if(e->gameObjectID == ALL_GAMEOBJECTS) {
 				for(auto& [key, listenerMap] : listeners) {
-					if(listenerMap.find(e->type) != listenerMap.end())
+					if(listenerMap.find(e->type) != listenerMap.end()) {
 						listenerMap.find(e->type)->second->onNotify(e);
+					}
 				}
 			} else if(listeners.find(e->gameObjectID) != listeners.end()) {
 				if(listeners[e->gameObjectID].find(e->type) != listeners[e->gameObjectID].end()) {
@@ -279,11 +277,12 @@ namespace Spark {
 			}
 		}
 
-		void fireEvent(Pool<Event>::ptrType& e) {
+		void fireEvent(const Pool<Event>::ptrType& e) {
 			if(e->gameObjectID == ALL_GAMEOBJECTS) {
 				for(auto& [key, listenerMap] : listeners) {
-					if(listenerMap.find(e->type) != listenerMap.end())
+					if(listenerMap.find(e->type) != listenerMap.end()) {
 						listenerMap.find(e->type)->second->onNotify(e.get());
+					}
 				}
 			} else if(listeners.find(e->gameObjectID) != listeners.end()) {
 				if(listeners[e->gameObjectID].find(e->type) != listeners[e->gameObjectID].end()) {
@@ -293,22 +292,24 @@ namespace Spark {
 		}
 
 		void addListener(unsigned int gameObjectID, Listener* l) noexcept {
-			if(listeners[gameObjectID].find(l->getListensForType()) == listeners[gameObjectID].end())
+			if(listeners[gameObjectID].find(l->getListensForType()) == listeners[gameObjectID].end()) {
 				listeners[gameObjectID][l->getListensForType()] = l;
+			}
 		}
 
 		void removeListener(unsigned int gameObjectID, unsigned int type) noexcept {
-			if(listeners[gameObjectID].find(type) != listeners[gameObjectID].end())
+			if(listeners[gameObjectID].find(type) != listeners[gameObjectID].end()) {
 				listeners[gameObjectID].erase(type);
+			}
 		}
 
 		void removeAllListeners(unsigned int gameObjectID) noexcept { listeners.erase(gameObjectID); }
 
 		GameObject* createGameObject() noexcept {
-			if(freeIDs.size() == 0) {
-				gameObjects.push_back(std::unique_ptr<GameObject> { new GameObject(*this, ++lastID) });
+			if(freeIDs.empty()) {
+				gameObjects.push_back(std::make_unique<GameObject>(*this, ++lastID));
 			} else {
-				gameObjects.push_back(std::unique_ptr<GameObject> { new GameObject(*this, freeIDs[0]) });
+				gameObjects.push_back(std::make_unique<GameObject>(*this, freeIDs[0]));
 				freeIDs.erase(freeIDs.begin());
 			}
 			return gameObjects.back().get();
@@ -330,14 +331,16 @@ namespace Spark {
 			}
 		}
 
-		void loadBlueprints(std::string filePath) {
+		void loadBlueprints(const std::string& filePath) {
 			std::ifstream file(filePath);
 
 			std::string fileText, line, blueprint;
 
-			while(getline(file, line))
-				if(line[0] != '#' && line[0] != '\n')
+			while(getline(file, line)) {
+				if(line[0] != '#' && line[0] != '\n') {
 					fileText += line;
+				}
+			}
 
 			fileText.erase(std::remove(fileText.begin(), fileText.end(), '\t'), fileText.end());
 			fileText.erase(std::remove(fileText.begin(), fileText.end(), '\n'), fileText.end());
@@ -357,13 +360,14 @@ namespace Spark {
 			}
 		}
 
-		Blueprint getBlueprintByName(std::string blueprintName) { return blueprintMap[blueprintName]; }
+		Blueprint getBlueprintByName(const std::string& blueprintName) { return blueprintMap[blueprintName]; }
 
-		World(): lastID(0) { }
+		World() = default;
+		~World() { for(auto& gameObject : gameObjects) { destroyGameObject(gameObject.get()); } }
 	};
 
 	inline void GameObject::listenForEvent(unsigned int type) noexcept {
-		listeners.push_back(std::unique_ptr<Listener> { new Listener(*this, type) });
+		listeners.push_back(std::make_unique<Listener>(*this, type));
 		world.addListener(ID, listeners.back().get());
 	}
 

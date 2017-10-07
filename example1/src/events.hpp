@@ -1,21 +1,28 @@
-#pragma once
+#ifndef EVENTS_HPP
+#define EVENTS_HPP
 
 #include <iostream>
+#include <random>
 #include <string>
 
 #include "../../spark.hpp"
 
-struct Die {
+class Die {
+private:
+    std::mt19937 eng{std::random_device{}()};
+
 	unsigned int rolls, sides;
+public:
+	unsigned int roll() {
+		unsigned int roll = 0;
+		for(unsigned int i = 0; i < rolls; ++i) {
+			roll += std::uniform_int_distribution<unsigned int>{1, sides}(eng);
+		}
+		return roll;
+	}
+
 	Die(unsigned int _rolls, unsigned int _sides): rolls(_rolls), sides(_sides) { }
 };
-
-int rollDie(const Die& die) noexcept {
-	int roll = 0;
-	for(unsigned int i = 0; i < die.rolls; ++i)
-		roll += rand() % die.sides + 1;
-	return roll;
-}
 
 enum EventType {
 	EVENT_DAMAGE = 0,
@@ -39,9 +46,7 @@ struct Damage {
 	Damage(int _damageDealt, DamageType _type): damageDealt(_damageDealt), type(_type) { }
 };
 
-struct DealDamageEvent {
-	std::vector<Damage> damageVec;
-};
+struct DealDamageEvent { std::vector<Damage> damageVec; };
 
 struct HealEvent { int health; };
 
@@ -51,3 +56,5 @@ struct RenderEvent {
 	std::string name, description;
 	char symbol;
 };
+
+#endif
