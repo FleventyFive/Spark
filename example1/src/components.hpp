@@ -28,7 +28,7 @@ public:
 		}
 	}
 
-	RenderComponent(char _symbol, std::string&& _name, std::string&& _description): Component(Spark::getComponentID<RenderComponent>()),
+	RenderComponent(char _symbol, const std::string& _name, const std::string& _description): Component(Spark::getComponentID<RenderComponent>()),
 		symbol(_symbol), name(_name), description(_description) { }
 };
 

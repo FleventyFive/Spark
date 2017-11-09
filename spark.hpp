@@ -78,7 +78,7 @@ namespace Spark {
 		constexpr int size() const noexcept { return objects.size(); }
 		constexpr bool empty() const noexcept { return objects.empty(); }
 
-		constexpr Pool() noexcept = default;
+		Pool() = default;
 	};
 
 	struct Event {
@@ -107,15 +107,15 @@ namespace Spark {
 
 	class GameObject {
 	private:
-		std::vector<std::unique_ptr<Listener>> listeners;
+		std::vector<std::shared_ptr<Listener>> listeners;
 		std::vector<std::unique_ptr<Component>> components;
 
 		World& world;
 
 		const unsigned int ID;
 	public:
-		void fireEvent(Event* e) { for(const auto& component : components) { component->fireEvent(e); } }
-		void fireEvent(const Pool<Event>::ptrType& e) { for(const auto& component : components) { component->fireEvent(e.get()); } }
+		void fireEvent(Event* e) const { for(const auto& component : components) { component->fireEvent(e); } }
+		void fireEvent(const Pool<Event>::ptrType& e) const { for(const auto& component : components) { component->fireEvent(e.get()); } }
 		
 		template<typename T, typename... TArgs>
 		void addComponent(TArgs&&... mArgs) noexcept {
@@ -168,6 +168,8 @@ namespace Spark {
 
 		unsigned int getID() const noexcept { return ID; }
 
+		inline void destroy();
+
 		GameObject(World& _world, unsigned int _ID): world(_world), ID(_ID) { }
 	};
 
@@ -177,7 +179,7 @@ namespace Spark {
 
 		const unsigned int listensForType;
 	public:
-		void onNotify(Event* e) noexcept { owner.fireEvent(e); }
+		void onNotify(Event* e) const noexcept { owner.fireEvent(e); }
 
 		unsigned int getListensForType() const noexcept { return listensForType; }
 		unsigned int getOwnerID() const noexcept { return owner.getID(); }
@@ -189,7 +191,7 @@ namespace Spark {
 	private:
 		std::vector<std::unique_ptr<GameObject>> gameObjects;
 		// GameObjects have a map of listeners, mapped by the event they listen for
-		std::map<unsigned int, std::map<unsigned int, Listener*>> listeners;
+		std::map<unsigned int, std::map<unsigned int, std::shared_ptr<Listener>>> listeners;
 
 		unsigned int lastID{0};
 		std::vector<unsigned int> freeIDs;
@@ -265,7 +267,7 @@ namespace Spark {
 	public:
 		void fireEvent(Event* e) {
 			if(e->gameObjectID == ALL_GAMEOBJECTS) {
-				for(auto& [key, listenerMap] : listeners) {
+				for(auto& [_, listenerMap] : listeners) {
 					if(listenerMap.find(e->type) != listenerMap.end()) {
 						listenerMap.find(e->type)->second->onNotify(e);
 					}
@@ -279,7 +281,7 @@ namespace Spark {
 
 		void fireEvent(const Pool<Event>::ptrType& e) {
 			if(e->gameObjectID == ALL_GAMEOBJECTS) {
-				for(auto& [key, listenerMap] : listeners) {
+				for(auto& [_, listenerMap] : listeners) {
 					if(listenerMap.find(e->type) != listenerMap.end()) {
 						listenerMap.find(e->type)->second->onNotify(e.get());
 					}
@@ -291,7 +293,7 @@ namespace Spark {
 			}
 		}
 
-		void addListener(unsigned int gameObjectID, Listener* l) noexcept {
+		void addListener(unsigned int gameObjectID, const std::shared_ptr<Listener>& l) noexcept {
 			if(listeners[gameObjectID].find(l->getListensForType()) == listeners[gameObjectID].end()) {
 				listeners[gameObjectID][l->getListensForType()] = l;
 			}
@@ -362,19 +364,27 @@ namespace Spark {
 
 		Blueprint getBlueprintByName(const std::string& blueprintName) { return blueprintMap[blueprintName]; }
 
+		std::vector<Blueprint> getBlueprints() {
+			std::vector<Blueprint> blueprints;
+			for(const auto& [key, blueprint] : blueprintMap)
+				blueprints.push_back(blueprint);
+
+			return blueprints;
+		}
+
 		World() = default;
-		~World() { for(auto& gameObject : gameObjects) { destroyGameObject(gameObject.get()); } }
+		~World() = default;
 	};
 
 	inline void GameObject::listenForEvent(unsigned int type) noexcept {
-		listeners.push_back(std::make_unique<Listener>(*this, type));
-		world.addListener(ID, listeners.back().get());
+		listeners.push_back(std::make_shared<Listener>(*this, type));
+		world.addListener(ID, listeners.back());
 	}
 
 	inline void GameObject::stopListeningForEvent(unsigned int type) noexcept {
 		int index = 0;
 		auto iter = std::find_if(listeners.begin(), listeners.end(),
-			[&](const std::unique_ptr<Listener>& lPtr) {
+			[&](const std::shared_ptr<Listener>& lPtr) {
 				++index;
 				return (lPtr->getListensForType() == type);
 			});
@@ -384,6 +394,8 @@ namespace Spark {
 			listeners.pop_back();
 		}
 	}
-};
+
+	inline void GameObject::destroy() { world.destroyGameObject(this); }
+}
 
 #endif

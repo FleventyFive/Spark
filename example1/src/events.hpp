@@ -9,7 +9,7 @@
 
 class Die {
 private:
-    std::mt19937 eng{std::random_device{}()};
+	std::mt19937 eng{std::random_device{}()};
 
 	unsigned int rolls, sides;
 public:
