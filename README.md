@@ -26,7 +26,7 @@ The pool is multipurpose, and can be used for more than just events. To get an o
 Spark::Pool<Spark::Event> eventPool;
 for(int i = 0; i < DESIRED_NUMBER_OF_EVENTS; ++i)
 	eventPool.add(std::unique_ptr<Spark::Event> { std::make_unique<Spark::Event>() });
-EventPtr event = eventPool.getResource();
+Spark::EventPtr event = eventPool.getResource();
 ```
 
 ### Events
