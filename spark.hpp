@@ -175,7 +175,7 @@ namespace Spark {
 
 	class Listener {
 	private:
-		GameObject& owner;
+		const GameObject& owner;
 
 		const unsigned int listensForType;
 	public:
@@ -184,7 +184,7 @@ namespace Spark {
 		unsigned int getListensForType() const noexcept { return listensForType; }
 		unsigned int getOwnerID() const noexcept { return owner.getID(); }
 
-		Listener(GameObject& _owner, unsigned int _listensForType): owner(_owner), listensForType(_listensForType) { }
+		Listener(const GameObject& _owner, unsigned int _listensForType): owner(_owner), listensForType(_listensForType) { }
 	};
 
 	class World {
@@ -242,7 +242,7 @@ namespace Spark {
 			_blueprint.name = blueprint.substr(start,end-(start));
 
 			start = blueprint.find('<', start) + 1;
-			end = blueprint.find('>', start);
+			end = blueprint.find("/>", start);
 
 			while(end < blueprintEnd) {
 				int identifier = blueprint.find(' ', start);
@@ -258,7 +258,7 @@ namespace Spark {
 				}
 
 				start = blueprint.find('<', start) + 1;
-				end = blueprint.find('>', start);
+				end = blueprint.find("/>", start);
 			}
 
 			blueprintMap[_blueprint.name] = _blueprint;
@@ -366,8 +366,9 @@ namespace Spark {
 
 		std::vector<Blueprint> getBlueprints() {
 			std::vector<Blueprint> blueprints;
-			for(const auto& [key, blueprint] : blueprintMap)
+			for(const auto& [key, blueprint] : blueprintMap) {
 				blueprints.push_back(blueprint);
+			}
 
 			return blueprints;
 		}

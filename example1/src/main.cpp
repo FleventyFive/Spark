@@ -24,7 +24,7 @@ int main() {
 	Spark::World world;
 
 	// Load in the blueprints
-	world.loadBlueprints("../objects.blpt");
+	world.loadBlueprints("objects.blpt");
 
 	// Create the sword from the blueprint
 	Spark::GameObject* sword = createFromBlueprint(world, world.getBlueprintByName("Sword"));
