@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/Users/markcalhoun/main/c++/ECS/ecs-master/example1/build/src",
+  "command": "clang++   -I/Users/markcalhoun/main/c++/ECS/ecs-master/example1/..   -Wall -Wextra -pedantic -std=c++17 -stdlib=libc++   -std=gnu++1z -o CMakeFiles/example1.dir/main.cpp.o -c /Users/markcalhoun/main/c++/ECS/ecs-master/example1/src/main.cpp",
+  "file": "/Users/markcalhoun/main/c++/ECS/ecs-master/example1/src/main.cpp"
+}
+]
